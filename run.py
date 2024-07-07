@@ -12,7 +12,7 @@ import aiohttp
 import streamlit as st
 from rich import print_json
 
-import ./image
+import image
 import recognize
 
 DEBUG_MODE = False  # Debug模式，是否打印请求返回信息
