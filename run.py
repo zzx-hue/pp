@@ -1,12 +1,15 @@
 import asyncio
 import hashlib
+import io
 import json
 import os
 import re
 import time
 import uuid
+from contextlib import redirect_stdout
 
 import aiohttp
+import streamlit as st
 from rich import print_json
 
 import image
@@ -14,29 +17,9 @@ import recognize
 
 DEBUG_MODE = False  # Debug模式，是否打印请求返回信息
 PROXY = ''  # 代理，如果多次出现IP问题可尝试将自己所用的魔法设置为代理。例如：使用clash则设置为 'http://127.0.0.1:7890'
-
-INVITE_CODE = '22882705'
-
 PUSH_MSG = ''
-
-
-# 检查变量
-def check_env():
-    invite_code_list = []
-    if not INVITE_CODE:
-        print('请按照文档设置INVITE_CODE环境变量')
-        raise Exception('请按照文档设置INVITE_CODE环境变量')
-    else:
-        if '@' in INVITE_CODE:
-            invite_code_list = INVITE_CODE.split('@')
-        elif '\n' in INVITE_CODE:
-            invite_code_list = INVITE_CODE.split('\n')
-        else:
-            invite_code_list.append(INVITE_CODE)
-        return invite_code_list
-
-
-# 推送
+# INVITE_CODE = '22882705'
+INVITE_CODE = st.text_input("code：")
 
 
 # 滑块数据加密
@@ -672,13 +655,17 @@ async def main(incode):
 
 
 async def run():
-    global PUSH_MSG
-    invite_code_list = check_env()
-    for i in range(len(invite_code_list)):
-        print(f'=========正在邀请第 {i + 1} 个邀请码=========')
-        PUSH_MSG += f'=========第 {i + 1} 个邀请码=========\n'
-        invite_code = invite_code_list[i]
+    invite_code = INVITE_CODE
+    if invite_code:
         await main(invite_code)
 
 
 asyncio.run(run())
+
+# 捕获并显示标准输出
+f = io.StringIO()
+with redirect_stdout(f):
+    asyncio.run(run())
+
+output = f.getvalue()
+st.text(output)
